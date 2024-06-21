@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/bootstrap_2.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.9.0/slick.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    <link rel="stylesheet" href="css/cart.css">
+    <script src="js/cart.js" defer></script>
+    <title>Cart</title>
+</head>
+<body>
+    <header class="header fixed-top">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="index.html"><strong>SVUtoo <i class="bi bi-cart3 cart-icon"></i><strong> </strong><span id="cart-count" style="color: red;"></strong></a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" aria-current="page" href="index.html">Home</a></li>
+                        <li>
+                            <a class="nav-link active" href="cart.html">Cart</a></li>
+                        <li>
+                            <a class="nav-link" href="checkout.html">Checkout</a></li>
+                        <li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html#Products">Products</a>
+                        </li>
+                        <a class="nav-link" href="#subscribe">Subscribe</a></li>
+                    </ul>
+                    <form class="d-flex">
+                        <input class="form-control me-2" type="search" placeholder="Search in Website" aria-label="Search">
+                        <button class="btn btn-outline-danger" type="submit">Search</button>
+
+                    </form>
+                </div>
+            </div>
+        </nav>
+
+    </header>
+    <main>
+            <div class="divider"></div>
+              <div class="container">
+                <h1>Shopping Cart</h1>
+                <div id="cart-items">
+                </div>
+                <div id="total-sum"></div>
+                <button class="btn btn-primary" id="checkout-btn">Checkout</button>
+                <div id="checkout-alert" class="alert alert-info mt-3 d-none" role="alert">
+                    Your cart has been cleared. Redirecting to checkout page for payment... in 3 Seconds
+                </div>
+              </div>
+
+    </main>
+
+
+    <script>
+
+
+
+
+
+// Initialize cart array from local storage
+let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+// Function to add a product to the cart
+// Function to add a product to the cart
+function addToCart(productName, productPrice) {
+  const productIndex = cart.findIndex(item => item.name === productName);
+  if (productIndex !== -1) {
+    // Product already exists in cart, increase quantity
+    cart[productIndex].quantity++;
+  } else {
+    // Product doesn't exist in cart, add it with quantity 1
+    const product = {
+      name: productName,
+      price: productPrice,
+      quantity: 1
+    };
+    cart.push(product);
+  }
+  // Store cart data in local storage
+  localStorage.setItem('cart', JSON.stringify(cart));
+  // Update the cart count
+  updateCartCount();
+  // Update cart display
+  displayCart();
+}
+
+// Function to increase quantity of a product in the cart
+function increaseQuantity(index) {
+  cart[index].quantity++;
+  // Update cart data in local storage
+  localStorage.setItem('cart', JSON.stringify(cart));
+  // Update cart display
+  displayCart();
+}
+
+// Function to decrease quantity of a product in the cart
+function decreaseQuantity(index) {
+  if (cart[index].quantity > 1) {
+    cart[index].quantity--;
+    // Update cart data in local storage
+    localStorage.setItem('cart', JSON.stringify(cart));
+    // Update cart display
+    displayCart();
+  }
+}
+
+// Function to calculate the full price of a product (quantity * price)
+function calculateFullPrice(product) {
+  return product.quantity * parseFloat(product.price.slice(1));
+}
+
+function calculateTotalSum() {
+  let totalSum = 0;
+  cart.forEach(item => {
+    totalSum += calculateFullPrice(item);
+  });
+  return totalSum.toFixed(2); // Return total sum rounded to 2 decimal places
+}
+
+// Function to display the total sum of full prices above the checkout button
+function displayTotalSum() {
+  const totalSumElement = document.getElementById('total-sum');
+  const totalSum = calculateTotalSum();
+  totalSumElement.textContent = `Total: $${totalSum}`;
+}
+
+// Function to display cart items with quantity and full price
+function displayCart() {
+  const cartItemsElement = document.getElementById('cart-items');
+  cartItemsElement.innerHTML = '';
+
+  if (cart.length === 0) {
+    cartItemsElement.innerHTML = '<p>Your cart is empty.</p>';
+  } else {
+    cart.forEach((item, index) => {
+      const itemElement = document.createElement('div');
+      itemElement.classList.add('card', 'mb-3');
+      const fullPrice = calculateFullPrice(item).toFixed(2);
+      itemElement.innerHTML = `
+        <div class="card-body">
+          <h5 class="card-title">${item.name}</h5>
+          <p class="card-text">Price: ${item.price}</p>
+          <p class="card-text">Quantity: ${item.quantity}</p>
+          <p class="card-text">Full Price: $${fullPrice}</p>
+          <button class="btn btn-danger btn-remove" data-index="${index}">Remove</button>
+          <button class="btn btn-secondary btn-sm mx-1" onclick="decreaseQuantity(${index})">-</button>
+          <button class="btn btn-secondary btn-sm" onclick="increaseQuantity(${index})">+</button>
+        </div>
+      `;
+      cartItemsElement.appendChild(itemElement);
+    });
+    // Display total sum of full prices above the checkout button
+    displayTotalSum();
+  }
+}
+
+
+
+
+
+// Update the cart count displayed in the navigation menu
+function updateCartCount() {
+  const cartCountElement = document.getElementById('cart-count');
+  cartCountElement.textContent = cart.length;
+}
+
+
+
+// Event listener for removing items from the cart
+document.getElementById('cart-items').addEventListener('click', event => {
+  if (event.target.classList.contains('btn-remove')) {
+    const index = event.target.dataset.index;
+    cart.splice(index, 1);
+    // Update cart data in local storage
+    localStorage.setItem('cart', JSON.stringify(cart));
+    displayCart();
+    updateCartCount();
+  }
+});
+
+// Event listener for checkout button
+document.getElementById('checkout-btn').addEventListener('click', () => {
+
+  // Remove the total sum element
+  const totalSumElement = document.getElementById('total-sum');
+  if (totalSumElement) {
+    totalSumElement.remove();
+  }
+
+  // Store total price in local storage
+  const totalPrice = calculateTotalSum(); // Calculate total sum
+  localStorage.setItem('totalPrice', totalPrice); // Store total price in local storage
+
+  cart = []; // Clear cart
+  localStorage.removeItem('cart'); // Remove cart data from local storage
+  displayCart(); // Update cart display
+  updateCartCount(); // Update cart count
+
+  document.getElementById('checkout-alert').classList.remove('d-none');
+
+        setTimeout(() => {
+          window.location.href = 'checkout.html';
+
+
+        }, 3000);  
+
+});
+
+
+// Display cart items when the page loads
+window.addEventListener('DOMContentLoaded', () => {
+  displayCart();
+  updateCartCount(); // Update cart count in case of existing items in the cart
+});
+
+
+
+document.getElementById('checkout-btn').addEventListener('click', function() {
+    // Assume totalPrice is calculated somewhere in your cart.html page
+    var totalPrice = displayTotalSum();
+
+    // Store total price in local storage
+    localStorage.setItem('totalPrice', totalPrice);
+});
+
+
+function subscribe() {
+    var subscribeAlert = document.getElementById('subscribeAlert');
+    subscribeAlert.classList.add('show');
+}
+
+document.getElementById('subscribeButton').addEventListener('click', subscribe);
+
+
+
+    </script>
+
+            <div class="divider"></div>
+            <div class="subscribe" id="subscribe">
+                <h2>Subscribe To <span class="text-danger">Our </span>Newsletter</h2>
+                <div class="form">
+                    <div class="input-group mb-3 newsletterForm">
+                        <input type="text" class="form-control" placeholder="Enter your Email">
+                        <button class="input-group-text btn btn-danger" id="subscribeButton" onclick="subscribe()">Subscribe</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container" style="padding-left: 60px; padding-right: 60px;">
+                <div class="alert alert-success alert-dismissible fade" role="alert" id="subscribeAlert">
+                    <strong>Thank you for subscribing!</strong> You will now receive our latest updates.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+
+        <footer class="footer">
+            <div class="container">
+                <span>© 2024 SVUtoo</span>
+            </div>
+        </footer>
+
+    <script src="js/nav.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js" integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js" integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13" crossorigin="anonymous"></script>
+</body>
+</html>
